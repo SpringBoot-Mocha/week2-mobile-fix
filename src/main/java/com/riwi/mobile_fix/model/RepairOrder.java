@@ -49,7 +49,7 @@ public class RepairOrder {
     private RepairStatus status = RepairStatus.PENDING;
 
     @ManyToOne
-    @JoinColumn(name = "technician_id", nullable = false)
+    @JoinColumn(name = "technician_id")
     private UserModel technician;
 
     @Column(length = 2000)

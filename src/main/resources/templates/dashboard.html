@@ -95,7 +95,7 @@
 <header>
     <div>
         <h1>MobileFix Dashboard</h1>
-        <div th:text="${currentUser.fullName} + ' (' + ${currentUser.role} + ')'">
+        <div th:text="${currentUser.fullName + ' (' + currentUser.role + ')'}">
             John Doe (USER)
         </div>
     </div>
@@ -106,7 +106,7 @@
 
 <div class="content">
     <!-- USER SECTION -->
-    <section class="card" th:if="${currentUser.role} == T(com.riwi.mobile_fix.model.Role).USER">
+    <section class="card" th:if="${currentUser.role == T(com.riwi.mobile_fix.model.Role).USER}">
         <h2>Create Repair Order</h2>
         <form id="createOrderForm">
             <label for="deviceId">Select device</label>
@@ -114,7 +114,7 @@
                 <option value="" disabled selected>Select a device</option>
                 <option th:each="device : ${devices}"
                         th:value="${device.id}"
-                        th:text="${device.brand} + ' ' + ${device.model}">
+                        th:text="${device.brand + ' ' + device.model}">
                     Device option
                 </option>
             </select>
@@ -127,7 +127,7 @@
         </form>
     </section>
 
-    <section class="card" th:if="${currentUser.role} == T(com.riwi.mobile_fix.model.Role).USER">
+    <section class="card" th:if="${currentUser.role == T(com.riwi.mobile_fix.model.Role).USER}">
         <h2>My Repair Orders</h2>
         <table class="orders-table">
             <thead>
@@ -142,14 +142,14 @@
             <tbody>
             <tr th:each="order : ${orders}">
                 <td th:text="${order.id}">1</td>
-                <td th:text="${order.device.brand} + ' ' + ${order.device.model}">Device name</td>
+                <td th:text="${order.device.brand + ' ' + order.device.model}">Device name</td>
                 <td th:text="${order.issueDescription}">Issue description</td>
                 <td>
                     <span class="badge" th:text="${order.status}">PENDING</span>
                 </td>
                 <td>
                     <button class="danger cancel-order"
-                            th:if="${order.status} == T(com.riwi.mobile_fix.model.RepairStatus).PENDING"
+                            th:if="${order.status == T(com.riwi.mobile_fix.model.RepairStatus).PENDING}"
                             th:attr="data-order-id=${order.id}">
                         Cancel
                     </button>
@@ -160,7 +160,7 @@
     </section>
 
     <!-- TECH SECTION -->
-    <section class="card" th:if="${currentUser.role} == T(com.riwi.mobile_fix.model.Role).TECH">
+    <section class="card" th:if="${currentUser.role == T(com.riwi.mobile_fix.model.Role).TECH}">
         <h2>Assigned Orders</h2>
         <table class="orders-table">
             <thead>
@@ -178,7 +178,7 @@
             <tr th:each="order : ${orders}">
                 <td th:text="${order.id}">1</td>
                 <td th:text="${order.customer.fullName}">Customer</td>
-                <td th:text="${order.device.brand} + ' ' + ${order.device.model}">Device name</td>
+                <td th:text="${order.device.brand + ' ' + order.device.model}">Device name</td>
                 <td th:text="${order.issueDescription}">Issue description</td>
                 <td>
                     <span class="badge" th:text="${order.status}">IN_PROGRESS</span>
@@ -190,7 +190,7 @@
                             <option th:each="status : ${repairStatuses}"
                                     th:value="${status}"
                                     th:text="${status}"
-                                    th:selected="${status} == ${order.status}">
+                                    th:selected="${status == order.status}">
                             </option>
                         </select>
                         <textarea name="techNotes" rows="2" placeholder="Add notes"></textarea>
@@ -203,7 +203,7 @@
     </section>
 
     <!-- ADMIN SECTION -->
-    <section class="card" th:if="${currentUser.role} == T(com.riwi.mobile_fix.model.Role).ADMIN">
+    <section class="card" th:if="${currentUser.role == T(com.riwi.mobile_fix.model.Role).ADMIN}">
         <h2>All Repair Orders</h2>
         <table class="orders-table">
             <thead>
@@ -220,7 +220,7 @@
             <tr th:each="order : ${orders}">
                 <td th:text="${order.id}">1</td>
                 <td th:text="${order.customer.fullName}">Customer</td>
-                <td th:text="${order.device.brand} + ' ' + ${order.device.model}">Device name</td>
+                <td th:text="${order.device.brand + ' ' + order.device.model}">Device name</td>
                 <td><span class="badge" th:text="${order.status}">PENDING</span></td>
                 <td th:text="${order.technician != null ? order.technician.fullName : 'Unassigned'}">Unassigned</td>
                 <td>
@@ -229,7 +229,7 @@
                             <option value="" disabled selected>Select technician</option>
                             <option th:each="tech : ${technicians}"
                                     th:value="${tech.id}"
-                                    th:text="${tech.fullName} + ' (' + ${tech.username} + ')'">
+                                    th:text="${tech.fullName + ' (' + tech.username + ')'}">
                                 Technician option
                             </option>
                         </select>
@@ -241,7 +241,7 @@
         </table>
     </section>
 
-    <section class="card" th:if="${currentUser.role} == T(com.riwi.mobile_fix.model.Role).ADMIN">
+    <section class="card" th:if="${currentUser.role == T(com.riwi.mobile_fix.model.Role).ADMIN}">
         <h2>Manage Devices</h2>
         <form id="createDeviceForm">
             <input type="text" name="brand" placeholder="Brand" required>
@@ -273,7 +273,7 @@
         </table>
     </section>
 
-    <section class="card" th:if="${currentUser.role} == T(com.riwi.mobile_fix.model.Role).ADMIN">
+    <section class="card" th:if="${currentUser.role == T(com.riwi.mobile_fix.model.Role).ADMIN}">
         <h2>Manage Users</h2>
         <form id="createUserForm">
             <input type="text" name="username" placeholder="Username" required>

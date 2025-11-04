@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>MobileFix - Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f6fa;
+            margin: 0;
+        }
+        header {
+            background-color: #0984e3;
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            margin: 0;
+        }
+        .content {
+            padding: 2rem;
+            display: grid;
+            gap: 2rem;
+        }
+        .card {
+            background: #ffffff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        h2 {
+            margin-top: 0;
+            color: #2d3436;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #dfe6e9;
+            text-align: left;
+        }
+        th {
+            background-color: #f1f2f6;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #0984e3;
+            color: white;
+        }
+        button.secondary {
+            background-color: #636e72;
+        }
+        button.danger {
+            background-color: #d63031;
+        }
+        form {
+            display: grid;
+            gap: 0.75rem;
+        }
+        input[type="text"],
+        textarea,
+        select {
+            padding: 0.5rem;
+            border: 1px solid #dfe6e9;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .orders-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            background-color: #dfe6e9;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 1rem;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div>
+        <h1>MobileFix Dashboard</h1>
+        <div th:text="${currentUser.fullName} + ' (' + ${currentUser.role} + ')'">
+            John Doe (USER)
+        </div>
+    </div>
+    <nav>
+        <a href="/logout">Logout</a>
+    </nav>
+</header>
+
+<div class="content">
+    <!-- USER SECTION -->
+    <section class="card" th:if="${currentUser.role} == T(com.riwi.mobile_fix.model.Role).USER">
+        <h2>Create Repair Order</h2>
+        <form id="createOrderForm">
+            <label for="deviceId">Select device</label>
+            <select id="deviceId" name="deviceId" required>
+                <option value="" disabled selected>Select a device</option>
+                <option th:each="device : ${devices}"
+                        th:value="${device.id}"
+                        th:text="${device.brand} + ' ' + ${device.model}">
+                    Device option
+                </option>
+            </select>
+
+            <label for="issueDescription">Describe the issue</label>
+            <textarea id="issueDescription" name="issueDescription" rows="4" required
+                      placeholder="Example: Screen cracked after a fall"></textarea>
+
+            <button type="submit">Submit request</button>
+        </form>
+    </section>
+
+    <section class="card" th:if="${currentUser.role} == T(com.riwi.mobile_fix.model.Role).USER">
+        <h2>My Repair Orders</h2>
+        <table class="orders-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Device</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="order : ${orders}">
+                <td th:text="${order.id}">1</td>
+                <td th:text="${order.device.brand} + ' ' + ${order.device.model}">Device name</td>
+                <td th:text="${order.issueDescription}">Issue description</td>
+                <td>
+                    <span class="badge" th:text="${order.status}">PENDING</span>
+                </td>
+                <td>
+                    <button class="danger cancel-order"
+                            th:if="${order.status} == T(com.riwi.mobile_fix.model.RepairStatus).PENDING"
+                            th:attr="data-order-id=${order.id}">
+                        Cancel
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- TECH SECTION -->
+    <section class="card" th:if="${currentUser.role} == T(com.riwi.mobile_fix.model.Role).TECH">
+        <h2>Assigned Orders</h2>
+        <table class="orders-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Device</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Notes</th>
+                <th>Update</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="order : ${orders}">
+                <td th:text="${order.id}">1</td>
+                <td th:text="${order.customer.fullName}">Customer</td>
+                <td th:text="${order.device.brand} + ' ' + ${order.device.model}">Device name</td>
+                <td th:text="${order.issueDescription}">Issue description</td>
+                <td>
+                    <span class="badge" th:text="${order.status}">IN_PROGRESS</span>
+                </td>
+                <td th:text="${order.techNotes}">No notes</td>
+                <td>
+                    <form class="status-form" th:attr="data-order-id=${order.id}">
+                        <select name="status" required>
+                            <option th:each="status : ${repairStatuses}"
+                                    th:value="${status}"
+                                    th:text="${status}"
+                                    th:selected="${status} == ${order.status}">
+                            </option>
+                        </select>
+                        <textarea name="techNotes" rows="2" placeholder="Add notes"></textarea>
+                        <button type="submit">Update</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ADMIN SECTION -->
+    <section class="card" th:if="${currentUser.role} == T(com.riwi.mobile_fix.model.Role).ADMIN">
+        <h2>All Repair Orders</h2>
+        <table class="orders-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Device</th>
+                <th>Status</th>
+                <th>Technician</th>
+                <th>Assign</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="order : ${orders}">
+                <td th:text="${order.id}">1</td>
+                <td th:text="${order.customer.fullName}">Customer</td>
+                <td th:text="${order.device.brand} + ' ' + ${order.device.model}">Device name</td>
+                <td><span class="badge" th:text="${order.status}">PENDING</span></td>
+                <td th:text="${order.technician != null ? order.technician.fullName : 'Unassigned'}">Unassigned</td>
+                <td>
+                    <form class="assign-form" th:attr="data-order-id=${order.id}">
+                        <select name="technicianId" required>
+                            <option value="" disabled selected>Select technician</option>
+                            <option th:each="tech : ${technicians}"
+                                    th:value="${tech.id}"
+                                    th:text="${tech.fullName} + ' (' + ${tech.username} + ')'">
+                                Technician option
+                            </option>
+                        </select>
+                        <button type="submit">Assign</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="card" th:if="${currentUser.role} == T(com.riwi.mobile_fix.model.Role).ADMIN">
+        <h2>Manage Devices</h2>
+        <form id="createDeviceForm">
+            <input type="text" name="brand" placeholder="Brand" required>
+            <input type="text" name="model" placeholder="Model" required>
+            <input type="text" name="serialNumber" placeholder="Serial number (optional)">
+            <button type="submit">Add device</button>
+        </form>
+        <table class="orders-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Brand</th>
+                <th>Model</th>
+                <th>Serial Number</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="device : ${devices}">
+                <td th:text="${device.id}">1</td>
+                <td th:text="${device.brand}">Brand</td>
+                <td th:text="${device.model}">Model</td>
+                <td th:text="${device.serialNumber}">Serial</td>
+                <td>
+                    <button class="danger delete-device" th:attr="data-device-id=${device.id}">Delete</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="card" th:if="${currentUser.role} == T(com.riwi.mobile_fix.model.Role).ADMIN">
+        <h2>Manage Users</h2>
+        <form id="createUserForm">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="text" name="fullName" placeholder="Full name" required>
+            <input type="text" name="email" placeholder="Email" required>
+            <select name="role" required>
+                <option value="USER">USER</option>
+                <option value="TECH">TECH</option>
+                <option value="ADMIN">ADMIN</option>
+            </select>
+            <button type="submit">Add user</button>
+        </form>
+        <table class="orders-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Full name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${users}">
+                <td th:text="${user.id}">1</td>
+                <td th:text="${user.username}">username</td>
+                <td th:text="${user.fullName}">Full name</td>
+                <td th:text="${user.email}">Email</td>
+                <td th:text="${user.role}">Role</td>
+                <td>
+                    <button class="danger delete-user" th:attr="data-user-id=${user.id}">Delete</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<script>
+    async function submitJson(url, method, payload) {
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: payload ? JSON.stringify(payload) : undefined
+        });
+
+        if (!response.ok) {
+            let message = 'Operation failed';
+            try {
+                const data = await response.json();
+                if (data.error) {
+                    message = data.error;
+                } else if (data.errors) {
+                    message = Object.values(data.errors).join(', ');
+                }
+            } catch (err) {
+                // ignore JSON parse errors
+            }
+            throw new Error(message);
+        }
+
+        return response;
+    }
+
+    document.getElementById('createOrderForm')?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.target;
+        const payload = {
+            deviceId: Number(form.deviceId.value),
+            issueDescription: form.issueDescription.value
+        };
+
+        try {
+            await submitJson('/api/orders', 'POST', payload);
+            alert('Repair order created successfully');
+            window.location.reload();
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+
+    document.querySelectorAll('.cancel-order').forEach(button => {
+        button.addEventListener('click', async () => {
+            const orderId = button.dataset.orderId;
+            try {
+                await submitJson(`/api/orders/${orderId}`, 'DELETE');
+                alert('Order cancelled');
+                window.location.reload();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+    });
+
+    document.querySelectorAll('.status-form').forEach(form => {
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const orderId = form.dataset.orderId;
+            const payload = {
+                status: form.status.value,
+                techNotes: form.techNotes.value
+            };
+            try {
+                await submitJson(`/api/orders/${orderId}/status`, 'PUT', payload);
+                alert('Order updated');
+                window.location.reload();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+    });
+
+    document.querySelectorAll('.assign-form').forEach(form => {
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const orderId = form.dataset.orderId;
+            const techId = form.technicianId.value;
+            if (!techId) {
+                alert('Please select a technician');
+                return;
+            }
+            try {
+                await submitJson(`/api/orders/${orderId}/assign/${techId}`, 'PUT');
+                alert('Technician assigned');
+                window.location.reload();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+    });
+
+    document.getElementById('createDeviceForm')?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.target;
+        const payload = {
+            brand: form.brand.value,
+            model: form.model.value,
+            serialNumber: form.serialNumber.value || null
+        };
+        try {
+            await submitJson('/api/devices', 'POST', payload);
+            alert('Device created');
+            window.location.reload();
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+
+    document.querySelectorAll('.delete-device').forEach(button => {
+        button.addEventListener('click', async () => {
+            const deviceId = button.dataset.deviceId;
+            if (!confirm('Delete this device?')) {
+                return;
+            }
+            try {
+                await submitJson(`/api/devices/${deviceId}`, 'DELETE');
+                alert('Device deleted');
+                window.location.reload();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+    });
+
+    document.getElementById('createUserForm')?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.target;
+        const payload = {
+            username: form.username.value,
+            password: form.password.value,
+            fullName: form.fullName.value,
+            email: form.email.value,
+            role: form.role.value
+        };
+        try {
+            await submitJson('/api/users', 'POST', payload);
+            alert('User created');
+            window.location.reload();
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+
+    document.querySelectorAll('.delete-user').forEach(button => {
+        button.addEventListener('click', async () => {
+            const userId = button.dataset.userId;
+            if (!confirm('Delete this user?')) {
+                return;
+            }
+            try {
+                await submitJson(`/api/users/${userId}`, 'DELETE');
+                alert('User deleted');
+                window.location.reload();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+    });
+</script>
+</body>
+</html>
